@@ -1,17 +1,49 @@
 "use client";
 import { useState } from "react";
-import { Building2, ArrowRight, ShieldCheck } from "lucide-react";
+import { Building2, ArrowRight, ShieldCheck, Sparkles, KeyRound } from "lucide-react";
+
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const fillDemo = (e: string, p: string) => {
+    setEmail(e);
+    setPassword(p);
+    setError("");
+  };
+
+  const handleLogin = async (loginEmail?: string, loginPassword?: string) => {
+    setBusy(true);
+    setError("");
+    const targetEmail = loginEmail || email;
+    const targetPassword = loginPassword || password;
+
+    try {
+      const r = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: targetEmail, password: targetPassword }),
+      });
+      const result = await r.json();
+      if (!r.ok) throw Error(result.error);
+      location.reload();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <main className="login">
       <section className="login-brand">
         <div className="brand">
           <span className="brand-icon">
-            <Building2 />
+            <Building2 size={24} />
           </span>
-          NestLedger
+          NestLedger<span className="brand-dot">.</span>
         </div>
         <div>
           <span className="eyebrow">YOUR PG, IN GOOD HANDS</span>
@@ -20,9 +52,9 @@ export default function Login() {
             <br />A lot more clarity.
           </h1>
           <p>
-            One workspace for your properties, residents,
+            One modern workspace for your properties, residents,
             <br />
-            and everything that keeps them running.
+            and everything that keeps them running smoothly.
           </p>
           <div className="login-stats">
             <div>
@@ -39,8 +71,11 @@ export default function Login() {
             </div>
           </div>
         </div>
-        <small>Built for the way you manage your PG.</small>
+        <small className="login-footnote">
+          <Sparkles size={14} /> Built for modern PG & co-living operations.
+        </small>
       </section>
+
       <section className="login-form">
         <div className="login-card">
           <span className="secure">
@@ -48,26 +83,32 @@ export default function Login() {
           </span>
           <h2>Welcome back.</h2>
           <p>Sign in to your owner workspace.</p>
+
+          <div className="demo-credentials-box">
+            <div className="demo-credentials-title">
+              <KeyRound size={14} />
+              <span>Quick Demo Access</span>
+            </div>
+            <div className="demo-buttons-row">
+              <button
+                type="button"
+                className="demo-pill"
+                onClick={() => {
+                  fillDemo("admin@admin.com", "test1234");
+                  handleLogin("admin@admin.com", "test1234");
+                }}
+                disabled={busy}
+              >
+                <span>👑 Owner Demo</span>
+                <small>admin@admin.com</small>
+              </button>
+            </div>
+          </div>
+
           <form
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              setBusy(true);
-              setError("");
-              try {
-                const f = new FormData(e.currentTarget);
-                const r = await fetch("/api/auth/login", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(Object.fromEntries(f)),
-                });
-                const result = await r.json();
-                if (!r.ok) throw Error(result.error);
-                location.reload();
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
+              handleLogin();
             }}
           >
             <label>
@@ -77,6 +118,8 @@ export default function Login() {
                 type="email"
                 autoComplete="username"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
               />
             </label>
@@ -87,6 +130,8 @@ export default function Login() {
                 type="password"
                 autoComplete="current-password"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
               />
             </label>

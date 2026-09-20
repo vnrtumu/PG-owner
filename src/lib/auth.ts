@@ -57,11 +57,27 @@ export async function propertyAccess(user: User, id: string) {
   );
 }
 export function originCheck(req: Request) {
-  if (
-    !process.env.APP_ORIGIN ||
-    req.headers.get("origin") !== process.env.APP_ORIGIN
-  )
-    throw Error("FORBIDDEN");
+  const origin = req.headers.get("origin");
+  if (!origin) return;
+
+  const host = req.headers.get("host");
+  // Allow configured origin
+  if (process.env.APP_ORIGIN && origin === process.env.APP_ORIGIN) return;
+  // Allow matching host (e.g. localhost:3000, localhost:3001, 127.0.0.1:3001)
+  if (host && (origin === `http://${host}` || origin === `https://${host}`)) return;
+
+  // Allow standard local development addresses
+  try {
+    const originUrl = new URL(origin);
+    if (
+      originUrl.hostname === "localhost" ||
+      originUrl.hostname === "127.0.0.1"
+    ) {
+      return;
+    }
+  } catch {}
+
+  throw Error("FORBIDDEN");
 }
 export function apiError(error: unknown) {
   const e = error as { message?: string; code?: string };
