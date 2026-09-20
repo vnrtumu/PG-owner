@@ -419,3 +419,107 @@ test("desktop and mobile screens, navigation, and CSV export", async ({
   const csv = await api.get("/api/export?type=invoices");
   expect(csv.headers()["content-type"]).toContain("text/csv");
 });
+
+test("property deletion confirms name, enforces owner access and protects history", async () => {
+  const name = `QA-Delete-${suffix}`;
+  expect(
+    (
+      await command("property", {
+        name,
+        city: "Hyderabad",
+        address: "QA address",
+        type: "Co-living",
+        due_day: 5,
+      })
+    ).ok(),
+  ).toBeTruthy();
+  let data = await (await api.get("/api/data")).json();
+  const id = data.properties.find((p: any) => p.name === name).id;
+  expect(
+    (
+      await command("room", {
+        property_id: id,
+        name: "101",
+        floor: "1",
+        beds: 2,
+        rent: 8000,
+      })
+    ).ok(),
+  ).toBeTruthy();
+  expect(
+    (
+      await command("propertyDelete", { id, confirmation: "wrong name" })
+    ).status(),
+  ).toBe(400);
+  const staffEmail = `qa-delete-${suffix}@example.com`;
+  await command("staff", {
+    name: "QA Manager",
+    email: staffEmail,
+    password: "QA-Testing-Password-123",
+    role: "manager",
+    property_ids: [id],
+  });
+  const manager = await playwrightRequest.newContext({ baseURL: origin });
+  await manager.post("/api/auth/login", {
+    headers: { Origin: origin },
+    data: { email: staffEmail, password: "QA-Testing-Password-123" },
+  });
+  expect(
+    (
+      await manager.post("/api/actions", {
+        headers: { Origin: origin },
+        data: { action: "propertyDelete", data: { id, confirmation: name } },
+      })
+    ).status(),
+  ).toBe(403);
+  await manager.dispose();
+  expect(
+    (await command("propertyDelete", { id, confirmation: name })).ok(),
+  ).toBeTruthy();
+  data = await (await api.get("/api/data")).json();
+  expect(data.properties.some((p: any) => p.id === id)).toBeFalsy();
+  expect(data.rooms.some((p: any) => p.property_id === id)).toBeFalsy();
+  expect(data.beds.some((p: any) => p.property_id === id)).toBeFalsy();
+  expect(
+    data.audit.some(
+      (a: any) => a.action === "propertyDelete" && a.details.record_id === id,
+    ),
+  ).toBeTruthy();
+  const occupied = data.properties.find((p: any) =>
+    data.tenants.some((t: any) => t.property_id === p.id),
+  );
+  expect(
+    (
+      await command("propertyDelete", {
+        id: occupied.id,
+        confirmation: occupied.name,
+      })
+    ).status(),
+  ).toBe(400);
+  const financialName = `QA-Finance-${suffix}`;
+  await command("property", {
+    name: financialName,
+    city: "Hyderabad",
+    address: "QA address",
+    type: "Co-living",
+    due_day: 5,
+  });
+  data = await (await api.get("/api/data")).json();
+  const financial = data.properties.find((p: any) => p.name === financialName);
+  await command("expense", {
+    property_id: financial.id,
+    category: "Other",
+    description: "QA expense",
+    amount: "1",
+    spent_on: "2026-09-20",
+    status: "Paid",
+  });
+  expect(
+    (
+      await command("propertyDelete", {
+        id: financial.id,
+        confirmation: financialName,
+      })
+    ).status(),
+  ).toBe(400);
+});

@@ -375,7 +375,10 @@ function FormDialog({
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>
-          <button className="primary" disabled={busy}>
+          <button
+            className={modal.action === "propertyDelete" ? "danger" : "primary"}
+            disabled={busy}
+          >
             {busy ? (
               <>
                 <Loader2 size={16} className="spin" /> Saving…
@@ -1379,12 +1382,35 @@ export default function Portal() {
                           Manage property <ArrowRight size={15} />
                         </button>
                         {owner && (
-                          <button
-                            className="text-btn"
-                            onClick={() => addProperty(p)}
-                          >
-                            Edit
-                          </button>
+                          <div className="property-edit-actions">
+                            <button
+                              className="text-btn"
+                              onClick={() => addProperty(p)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="text-btn delete-property"
+                              aria-label={`Delete ${p.name}`}
+                              onClick={() =>
+                                setModal({
+                                  title: "Delete property?",
+                                  subtitle: `This permanently removes ${p.name}, its empty rooms and beds, and staff assignments. Properties with tenant or operational records cannot be deleted. Activity history is retained.`,
+                                  action: "propertyDelete",
+                                  fields: [
+                                    f(
+                                      "confirmation",
+                                      `Type “${p.name}” to confirm`,
+                                    ),
+                                  ],
+                                  values: { id: p.id },
+                                  submit: "Delete property",
+                                })
+                              }
+                            >
+                              Delete
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -2235,7 +2261,11 @@ export default function Portal() {
               if (!r.ok) throw Error(result.error);
               await refresh();
               setToast("Document uploaded securely.");
-            } else await act(modal.action, values);
+            } else {
+              await act(modal.action, values);
+              if (modal.action === "propertyDelete" && property === values.id)
+                setProperty("all");
+            }
           }}
         />
       )}

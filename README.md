@@ -5,7 +5,7 @@ A self-hosted owner workspace for a PG business. Next.js 16, React 19, TypeScrip
 ## What works
 
 - Owner dashboard: occupancy, available beds, monthly collections, outstanding balances, cash-flow chart and property summaries.
-- Multiple PGs with property filters, amenities, rules and rent due-day settings.
+- Multiple PGs with property filters, amenities, rules and rent due-day settings. Owner-only property deletion requires typing its name; empty rooms/beds and staff assignments are removed, audit history is retained, and properties with any tenant, financial, enquiry, maintenance or document history cannot be deleted.
 - Rooms and individual beds; maintenance status; transactional protection against double occupancy.
 - Tenant onboarding, profiles, emergency contacts, agreement expiry, deposit tracking, notices and within-PG bed transfers.
 - Current-month billing, first-month proration, manual extra charges, partial payments, duplicate-submission protection and printable receipts.

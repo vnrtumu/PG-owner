@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     const d = body.data ?? {};
     const permissions: Record<string, string[]> = {
       property: ["owner"],
+      propertyDelete: ["owner"],
       room: ["owner", "manager"],
       maintenance: ["owner", "manager", "caretaker"],
       tenant: ["owner", "manager"],
@@ -90,6 +91,53 @@ export async function POST(req: Request) {
               )
             ).rows[0].id;
           }
+          break;
+        }
+        case "propertyDelete": {
+          const property = await scoped("properties", d.id);
+          if (text(d.confirmation, 100) !== property.name)
+            throw Error("Type the property name exactly to confirm deletion.");
+          const linked = await c.query(
+            `SELECT EXISTS (
+              SELECT 1 FROM stays WHERE property_id=$1
+              UNION ALL SELECT 1 FROM invoices WHERE property_id=$1
+              UNION ALL SELECT 1 FROM expenses WHERE property_id=$1
+              UNION ALL SELECT 1 FROM complaints WHERE property_id=$1
+              UNION ALL SELECT 1 FROM bookings WHERE property_id=$1
+              UNION ALL SELECT 1 FROM documents WHERE property_id=$1
+            ) AS present`,
+            [property.id],
+          );
+          if (linked.rows[0].present)
+            throw Error(
+              "This property has tenant, financial, enquiry, maintenance or document records and cannot be deleted.",
+            );
+          await c.query(
+            "DELETE FROM beds WHERE room_id IN (SELECT id FROM rooms WHERE property_id=$1)",
+            [property.id],
+          );
+          await c.query("DELETE FROM rooms WHERE property_id=$1", [
+            property.id,
+          ]);
+          await c.query("DELETE FROM user_properties WHERE property_id=$1", [
+            property.id,
+          ]);
+          await c.query(
+            "UPDATE audit_logs SET property_id=NULL,details=details || $2::jsonb WHERE property_id=$1",
+            [
+              property.id,
+              JSON.stringify({
+                deleted_property_id: property.id,
+                deleted_property_name: property.name,
+              }),
+            ],
+          );
+          await c.query("DELETE FROM properties WHERE id=$1", [property.id]);
+          propertyId = null;
+          result = {
+            message: "Property deleted successfully.",
+            property_name: property.name,
+          };
           break;
         }
         case "room": {
@@ -525,7 +573,13 @@ export async function POST(req: Request) {
           action,
           JSON.stringify({
             record_id: d.id ?? null,
-            ...(["payment", "deposit", "checkout", "transfer"].includes(action)
+            ...([
+              "payment",
+              "deposit",
+              "checkout",
+              "transfer",
+              "propertyDelete",
+            ].includes(action)
               ? { ...safe, result }
               : {}),
           }),

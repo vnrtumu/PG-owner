@@ -1827,3 +1827,15 @@ td small,
     transition: none !important;
   }
 }
+
+.property-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.delete-property {
+  color: #ad4b3d;
+}
+.card-actions {
+  flex-wrap: wrap;
+}
