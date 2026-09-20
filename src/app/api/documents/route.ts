@@ -49,22 +49,18 @@ export async function POST(req: Request) {
     await mkdir(root(), { recursive: true });
     filePath = path.join(/* turbopackIgnore: true */ root(), key);
     await writeFile(filePath, bytes, { mode: 0o600 });
+    
+    const docName = (form.get("name") ? String(form.get("name")).trim().slice(0, 200) : "") || file.name.slice(0, 200);
+    const category = String(form.get("category") || "Other").trim().slice(0, 60) || "Other";
+
     await transaction(async (c) => {
       await c.query(
         "INSERT INTO documents(property_id,tenant_id,name,category,file_key,mime,size) VALUES($1,$2,$3,$4,$5,$6,$7)",
         [
           p,
           tenant,
-          file.name.slice(0, 200),
-          z
-            .enum([
-              "Identity",
-              "Agreement",
-              "Property",
-              "Expense receipt",
-              "Other",
-            ])
-            .parse(form.get("category")),
+          docName,
+          category,
           key,
           mime,
           file.size,
@@ -81,6 +77,7 @@ export async function POST(req: Request) {
     return apiError(e);
   }
 }
+
 export async function GET(req: Request) {
   try {
     const user = await requireUser();
@@ -96,13 +93,51 @@ export async function GET(req: Request) {
         d.file_key,
       ),
     );
+    const isInline =
+      new URL(req.url).searchParams.get("view") === "1" ||
+      new URL(req.url).searchParams.get("inline") === "1";
+    const disposition = isInline ? "inline" : "attachment";
+
     return new Response(file, {
       headers: {
         "Content-Type": d.mime,
-        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(d.name)}`,
+        "Content-Disposition": `${disposition}; filename*=UTF-8''${encodeURIComponent(d.name)}`,
         "Cache-Control": "private, no-store",
       },
     });
+  } catch (e) {
+    return apiError(e);
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    originCheck(req);
+    const user = await requireUser();
+    if (!["owner", "manager"].includes(user.role)) throw Error("FORBIDDEN");
+    const id = z.uuid().parse(new URL(req.url).searchParams.get("id"));
+    const d = (await db.query("SELECT * FROM documents WHERE id=$1", [id]))
+      .rows[0];
+    if (!d || !(await propertyAccess(user, d.property_id)))
+      throw Error("FORBIDDEN");
+
+    await transaction(async (c) => {
+      await c.query("DELETE FROM documents WHERE id=$1", [id]);
+      await c.query(
+        "INSERT INTO audit_logs(user_id,property_id,action,details) VALUES($1,$2,$3,$4)",
+        [
+          user.id,
+          d.property_id,
+          "documentDelete",
+          JSON.stringify({ name: d.name, category: d.category }),
+        ],
+      );
+    });
+
+    const filePath = path.join(/* turbopackIgnore: true */ root(), d.file_key);
+    await unlink(filePath).catch(() => {});
+
+    return Response.json({ ok: true });
   } catch (e) {
     return apiError(e);
   }

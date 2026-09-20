@@ -13,7 +13,7 @@ export function Sidebar() {
       ? ["Overview", "Rooms & beds", "Maintenance", "Settings"].includes(n.name)
       : n.name === "Team"
         ? owner
-        : n.name === "Documents"
+        : n.name === "Documents" || n.name === "Staff & salaries"
           ? ops
           : true,
   );
@@ -39,7 +39,7 @@ export function Sidebar() {
               <button
                 key={n.name}
                 aria-label={n.name}
-                className={`${page === n.name ? "active" : ""} ${index === 5 || n.name === "Team" ? "nav-gap" : ""}`}
+                className={`${page === n.name ? "active" : ""} ${n.name === "Rent & payments" || n.name === "Team" ? "nav-gap" : ""}`}
                 onClick={() => go(n.name)}
               >
                 <Icon size={19} />

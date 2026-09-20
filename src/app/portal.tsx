@@ -13,6 +13,9 @@ import { Footer } from "@/components/portal/layout/Footer";
 import { FormDialog } from "@/components/portal/dialogs/FormDialog";
 import { TenantDetailDialog } from "@/components/portal/dialogs/TenantDetailDialog";
 import { ShareReceiptDialog } from "@/components/portal/dialogs/ShareReceiptDialog";
+import { DocumentViewerDialog } from "@/components/portal/dialogs/DocumentViewerDialog";
+import { UploadDocumentDialog } from "@/components/portal/dialogs/UploadDocumentDialog";
+import { PropertyInvestmentDialog } from "@/components/portal/dialogs/PropertyInvestmentDialog";
 
 import { OverviewView } from "@/components/portal/views/OverviewView";
 import { PropertiesView } from "@/components/portal/views/PropertiesView";
@@ -21,6 +24,7 @@ import { TenantsView } from "@/components/portal/views/TenantsView";
 import { EnquiriesView } from "@/components/portal/views/EnquiriesView";
 import { RentPaymentsView } from "@/components/portal/views/RentPaymentsView";
 import { ExpensesView } from "@/components/portal/views/ExpensesView";
+import { StaffSalariesView } from "@/components/portal/views/StaffSalariesView";
 import { MaintenanceView } from "@/components/portal/views/MaintenanceView";
 import { DocumentsView } from "@/components/portal/views/DocumentsView";
 import { TeamView } from "@/components/portal/views/TeamView";
@@ -39,6 +43,17 @@ function PortalContent() {
     setDetail,
     sharePayment,
     setSharePayment,
+    viewDoc,
+    setViewDoc,
+    uploadDocOpen,
+    setUploadDocOpen,
+    uploadDocTenantId,
+    setUploadDocTenantId,
+    deleteDoc,
+    investmentProp,
+    setInvestmentProp,
+    savePropertyInvestment,
+    defaultProp,
     data,
     refresh,
     act,
@@ -65,6 +80,7 @@ function PortalContent() {
           {page === "Enquiries" && <EnquiriesView />}
           {page === "Rent & payments" && <RentPaymentsView />}
           {page === "Expenses" && <ExpensesView />}
+          {page === "Staff & salaries" && <StaffSalariesView />}
           {page === "Maintenance" && <MaintenanceView />}
           {page === "Documents" && <DocumentsView />}
           {page === "Team" && <TeamView />}
@@ -188,6 +204,37 @@ function PortalContent() {
           payment={sharePayment}
           data={data}
           onClose={() => setSharePayment(null)}
+          onToast={setToast}
+        />
+      )}
+      {viewDoc && (
+        <DocumentViewerDialog
+          doc={viewDoc}
+          onClose={() => setViewDoc(null)}
+          onDelete={deleteDoc}
+          onToast={setToast}
+          canDelete={ops}
+        />
+      )}
+      {uploadDocOpen && (
+        <UploadDocumentDialog
+          properties={data.properties}
+          tenants={data.tenants}
+          defaultProp={defaultProp}
+          initialTenantId={uploadDocTenantId}
+          onClose={() => {
+            setUploadDocOpen(false);
+            setUploadDocTenantId("");
+          }}
+          onUploaded={refresh}
+          onToast={setToast}
+        />
+      )}
+      {investmentProp && (
+        <PropertyInvestmentDialog
+          property={investmentProp}
+          onClose={() => setInvestmentProp(null)}
+          onSave={savePropertyInvestment}
           onToast={setToast}
         />
       )}

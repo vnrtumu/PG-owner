@@ -9,6 +9,7 @@ import {
   Download,
   Plus,
   Upload,
+  CalendarDays,
 } from "lucide-react";
 import { usePortal } from "../context/PortalContext";
 import { today, f, sel } from "../utils";
@@ -26,6 +27,12 @@ export function Header() {
     complaints,
   } = usePortal();
 
+  const pendingEnquiriesCount = (data.bookings || []).filter(
+    (b) =>
+      (property === "all" || b.property_id === property) &&
+      (b.status === "New" || b.status === "Contacted"),
+  ).length;
+
   return (
     <header className="topbar">
       <div className="crumb">
@@ -41,6 +48,21 @@ export function Header() {
         <span>{page}</span>
       </div>
       <div className="top-actions">
+        <button
+          type="button"
+          className={`topbar-enquiries-btn ${page === "Enquiries" ? "active" : ""}`}
+          onClick={() => go("Enquiries")}
+          title="View PG enquiries & prospective bookings"
+        >
+          <CalendarDays size={15} />
+          <span>Enquiries</span>
+          {pendingEnquiriesCount > 0 && (
+            <span className="topbar-enquiries-badge">
+              {pendingEnquiriesCount}
+            </span>
+          )}
+        </button>
+
         <div className="property-select">
           <Building2 size={16} />
           <select
@@ -85,6 +107,7 @@ export function PageHeading() {
     setModal,
     propertyField,
     defaultProp,
+    setUploadDocOpen,
   } = usePortal();
 
   const actionButton = () => {
@@ -217,37 +240,14 @@ export function PageHeading() {
         </button>
       ) : null;
     if (page === "Documents")
-      return (
+      return ops ? (
         <button
           className="primary"
-          onClick={() =>
-            setModal({
-              title: "Upload a document",
-              subtitle: "Private files · PDF, JPG or PNG · Maximum 5 MB",
-              action: "document",
-              fields: [
-                propertyField,
-                {
-                  name: "tenant_id",
-                  label: "Tenant (optional)",
-                  type: "select",
-                },
-                sel("category", "Category", [
-                  "Identity",
-                  "Agreement",
-                  "Property",
-                  "Expense receipt",
-                  "Other",
-                ]),
-                f("file", "Document", "file"),
-              ],
-              values: { property_id: defaultProp, category: "Identity" },
-            })
-          }
+          onClick={() => setUploadDocOpen(true)}
         >
           <Upload size={17} /> Upload document
         </button>
-      );
+      ) : null;
     if (page === "Team")
       return (
         <button
@@ -287,8 +287,11 @@ export function PageHeading() {
     Enquiries: "Keep the conversation going, from first enquiry to move-in.",
     "Rent & payments": "Stay on top of every bill and every payment.",
     Expenses: "Know where your money goes.",
+    "Staff & salaries":
+      "Manage PG staff, monthly payroll, salary disbursements, and payment vouchers.",
     Maintenance: "Small fixes. Better stays.",
-    Documents: "Important paperwork, safely in one place.",
+    Documents:
+      "Central repository for PG property deeds, licenses, compliance, agreements, and verification documents.",
     Reports: "A closer look at your business numbers.",
     Team: "The right access for the right people.",
     Settings: "Make this workspace work for you.",

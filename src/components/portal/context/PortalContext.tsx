@@ -73,6 +73,19 @@ export interface PortalContextType {
   shareReceipt: (p: Row) => void;
   sharePayment: Row | null;
   setSharePayment: React.Dispatch<React.SetStateAction<Row | null>>;
+  viewDoc: Row | null;
+  setViewDoc: React.Dispatch<React.SetStateAction<Row | null>>;
+  uploadDocOpen: boolean;
+  setUploadDocOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  uploadDocTenantId: string;
+  setUploadDocTenantId: React.Dispatch<React.SetStateAction<string>>;
+  deleteDoc: (id: string) => Promise<void>;
+  investmentProp: Row | null;
+  setInvestmentProp: React.Dispatch<React.SetStateAction<Row | null>>;
+  savePropertyInvestment: (
+    propertyId: string,
+    breakdown: Record<string, number>,
+  ) => Promise<void>;
   exportReport: (type: string) => void;
 }
 
@@ -107,6 +120,10 @@ export function PortalProvider({
   const [filter, setFilter] = useState("All");
   const [detail, setDetail] = useState<Row | null>(null);
   const [sharePayment, setSharePayment] = useState<Row | null>(null);
+  const [viewDoc, setViewDoc] = useState<Row | null>(null);
+  const [uploadDocOpen, setUploadDocOpen] = useState(false);
+  const [uploadDocTenantId, setUploadDocTenantId] = useState("");
+  const [investmentProp, setInvestmentProp] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Sync internal data when initialData updates
@@ -310,6 +327,27 @@ export function PortalProvider({
     window.location.href = `/api/export?type=${type}&property=${property}`;
   };
 
+  const deleteDoc = useCallback(
+    async (id: string) => {
+      const res = await fetch(`/api/documents?id=${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Could not delete document.");
+      }
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const savePropertyInvestment = useCallback(
+    async (propertyId: string, breakdown: Record<string, number>) => {
+      await act("propertyInvestment", { id: propertyId, breakdown });
+    },
+    [act],
+  );
+
   return (
     <PortalContext.Provider
       value={{
@@ -368,6 +406,16 @@ export function PortalProvider({
         shareReceipt,
         sharePayment,
         setSharePayment,
+        viewDoc,
+        setViewDoc,
+        uploadDocOpen,
+        setUploadDocOpen,
+        uploadDocTenantId,
+        setUploadDocTenantId,
+        deleteDoc,
+        investmentProp,
+        setInvestmentProp,
+        savePropertyInvestment,
         exportReport,
       }}
     >

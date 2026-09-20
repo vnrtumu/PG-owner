@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     const d = body.data ?? {};
     const permissions: Record<string, string[]> = {
       property: ["owner"],
+      propertyInvestment: ["owner"],
       propertyDelete: ["owner"],
       room: ["owner", "manager"],
       maintenance: ["owner", "manager", "caretaker"],
@@ -91,6 +92,31 @@ export async function POST(req: Request) {
               )
             ).rows[0].id;
           }
+          break;
+        }
+        case "propertyInvestment": {
+          const prop = await scoped("properties", d.id);
+          const breakdown =
+            typeof d.breakdown === "object" && d.breakdown !== null
+              ? d.breakdown
+              : {};
+          const cleanBreakdown: Record<string, number> = {};
+          let totalPaise = 0;
+          for (const [k, v] of Object.entries(breakdown)) {
+            const amountPaise = paise(v);
+            if (amountPaise > 0) {
+              cleanBreakdown[k] = amountPaise;
+              totalPaise += amountPaise;
+            }
+          }
+          await c.query(
+            "UPDATE properties SET buying_cost_total=$1, buying_cost_breakdown=$2 WHERE id=$3",
+            [totalPaise, JSON.stringify(cleanBreakdown), prop.id],
+          );
+          propertyId = prop.id;
+          result = {
+            message: "Property capital investment updated successfully.",
+          };
           break;
         }
         case "propertyDelete": {

@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, email text UNIQUE NOT NULL, password_hash text NOT NULL, role text NOT NULL CHECK(role IN ('owner','manager','accountant','caretaker')), active boolean NOT NULL DEFAULT true, created_at timestamptz DEFAULT now());
-CREATE TABLE IF NOT EXISTS properties (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, address text NOT NULL, city text NOT NULL, contact text NOT NULL DEFAULT '', type text NOT NULL DEFAULT 'Co-living', amenities text NOT NULL DEFAULT '', rules text NOT NULL DEFAULT '', due_day int NOT NULL DEFAULT 5 CHECK(due_day BETWEEN 1 AND 28), created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS properties (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, address text NOT NULL, city text NOT NULL, contact text NOT NULL DEFAULT '', type text NOT NULL DEFAULT 'Co-living', amenities text NOT NULL DEFAULT '', rules text NOT NULL DEFAULT '', due_day int NOT NULL DEFAULT 5 CHECK(due_day BETWEEN 1 AND 28), buying_cost_total bigint NOT NULL DEFAULT 0 CHECK(buying_cost_total>=0), buying_cost_breakdown jsonb NOT NULL DEFAULT '{}', created_at timestamptz DEFAULT now());
 CREATE TABLE IF NOT EXISTS user_properties (user_id uuid REFERENCES users ON DELETE CASCADE, property_id uuid REFERENCES properties ON DELETE CASCADE, PRIMARY KEY(user_id,property_id));
 CREATE TABLE IF NOT EXISTS rooms (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), property_id uuid NOT NULL REFERENCES properties, name text NOT NULL, floor text NOT NULL DEFAULT 'Ground', rent bigint NOT NULL CHECK(rent>=0), UNIQUE(property_id,name));
 CREATE TABLE IF NOT EXISTS beds (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), room_id uuid NOT NULL REFERENCES rooms, label text NOT NULL, maintenance boolean NOT NULL DEFAULT false, UNIQUE(room_id,label));
@@ -23,3 +23,5 @@ CREATE INDEX IF NOT EXISTS payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS audit_created ON audit_logs(created_at DESC);
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version integer NOT NULL DEFAULT 0;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS buying_cost_total bigint NOT NULL DEFAULT 0;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS buying_cost_breakdown jsonb NOT NULL DEFAULT '{}';

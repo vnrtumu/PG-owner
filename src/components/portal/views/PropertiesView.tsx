@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import { Building2, ArrowRight } from "lucide-react";
+import { Building2, ArrowRight, PieChart } from "lucide-react";
 import { usePortal } from "../context/PortalContext";
 import { Badge } from "../common/Badge";
 import { Empty } from "../common/Empty";
-import { f } from "../utils";
+import { f, money } from "../utils";
 
 export function PropertiesView() {
   const {
@@ -16,6 +16,7 @@ export function PropertiesView() {
     go,
     addProperty,
     setModal,
+    setInvestmentProp,
   } = usePortal();
 
   return (
@@ -71,6 +72,22 @@ export function PropertiesView() {
               <p className="amenities">
                 {p.amenities || "No amenities added yet"}
               </p>
+              <div className="property-investment-row">
+                <div className="property-investment-info">
+                  <small>Capital & Setup Cost</small>
+                  <b>{money(p.buying_cost_total || 0)}</b>
+                </div>
+                {owner && (
+                  <button
+                    type="button"
+                    className="text-btn investment-btn"
+                    onClick={() => setInvestmentProp(p)}
+                    title="View and edit segregated buying & setup costs"
+                  >
+                    <PieChart size={13} /> Capital Cost
+                  </button>
+                )}
+              </div>
               <div className="card-actions">
                 <button
                   className="secondary"

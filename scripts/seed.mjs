@@ -44,7 +44,7 @@ try {
     props.push(
       (
         await db.query(
-          "INSERT INTO properties(name,address,city,type,amenities,contact,rules) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id",
+          "INSERT INTO properties(name,address,city,type,amenities,contact,rules,buying_cost_total,buying_cost_breakdown) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id",
           [
             name,
             address,
@@ -53,6 +53,15 @@ try {
             amenities,
             "9000000000",
             "Quiet hours after 10 PM. Keep shared spaces clean.",
+            250000000,
+            JSON.stringify({
+              purchase: 150000000,
+              furnishing: 45000000,
+              appliances: 30000000,
+              electrical_plumbing: 15000000,
+              legal_licensing: 5000000,
+              other_setup: 5000000,
+            }),
           ],
         )
       ).rows[0].id,

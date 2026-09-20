@@ -13,17 +13,23 @@ import {
   ArrowRight,
   Building2,
   ArrowUpRight,
+  Target,
+  TrendingUp,
+  Sparkles,
+  SlidersHorizontal,
+  PieChart,
 } from "lucide-react";
 import { usePortal } from "../context/PortalContext";
 import { Stat } from "../common/Stat";
 import { Table } from "../common/Table";
 import { Badge } from "../common/Badge";
-import { money, dateValue, today } from "../utils";
+import { money, dateValue, today, calculateBreakevenMetrics } from "../utils";
 
 export function OverviewView() {
   const {
     data,
     finance,
+    owner,
     occupancy,
     occupied,
     beds,
@@ -40,10 +46,13 @@ export function OverviewView() {
     active,
     go,
     setFilter,
+    property,
     setProperty,
+    setInvestmentProp,
   } = usePortal();
 
   const month = today().slice(0, 7);
+  const breakeven = calculateBreakevenMetrics(props, payments, expenses, property);
 
   if (finance) {
     return (
@@ -75,6 +84,124 @@ export function OverviewView() {
             icon={Home}
           />
         </div>
+
+        {/* Breakeven & Capital Investment Tracking Panel */}
+        <section className="panel breakeven-panel">
+          <div className="panel-head">
+            <div className="breakeven-head-title">
+              <div className="breakeven-badge-icon">
+                <Target size={22} />
+              </div>
+              <div>
+                <h2>Capital Investment & Breakeven Analysis</h2>
+                <p>
+                  Investment recovery calculated against your monthly operating profits (Collections − Expenses)
+                  {property !== "all" && props.find((p) => p.id === property)
+                    ? ` for ${props.find((p) => p.id === property)?.name}`
+                    : " across all PGs"}
+                </p>
+              </div>
+            </div>
+            {owner && (
+              <div className="breakeven-head-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    const targetProp =
+                      property !== "all"
+                        ? props.find((p) => p.id === property) || props[0]
+                        : props[0];
+                    if (targetProp) setInvestmentProp(targetProp);
+                  }}
+                  title="Edit segregated capital and setup costs"
+                >
+                  <SlidersHorizontal size={15} /> Segregate Capital Costs
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="breakeven-kpi-row">
+            <div className="breakeven-kpi-box">
+              <span className="breakeven-kpi-label">TOTAL CAPITAL INVESTMENT</span>
+              <h3 className="breakeven-kpi-value">{money(breakeven.totalInvestment)}</h3>
+              <small className="breakeven-kpi-sub">
+                Acquisition & setup costs
+              </small>
+            </div>
+
+            <div className="breakeven-kpi-box">
+              <span className="breakeven-kpi-label">CUMULATIVE PROFIT RECOVERED</span>
+              <h3 className="breakeven-kpi-value profit-color">{money(breakeven.cumulativeProfit)}</h3>
+              <small className="breakeven-kpi-sub">
+                Revenue {money(breakeven.totalRevenue)} − OpEx {money(breakeven.totalExpenses)}
+              </small>
+            </div>
+
+            <div className="breakeven-kpi-box">
+              <span className="breakeven-kpi-label">NET PROFIT THIS MONTH</span>
+              <h3 className={`breakeven-kpi-value ${breakeven.thisMonthProfit >= 0 ? "profit-color" : "loss-color"}`}>
+                {breakeven.thisMonthProfit >= 0 ? "+" : ""}{money(breakeven.thisMonthProfit)}
+              </h3>
+              <small className="breakeven-kpi-sub">
+                {money(breakeven.thisMonthRevenue)} in · {money(breakeven.thisMonthExpenses)} out
+              </small>
+            </div>
+
+            <div className="breakeven-kpi-box highlight">
+              <span className="breakeven-kpi-label">RECOVERY STATUS</span>
+              <h3 className="breakeven-kpi-value recovery-rate">
+                {breakeven.recoveryPercentage.toFixed(1)}%
+              </h3>
+              <small className="breakeven-kpi-sub">
+                {breakeven.isAchieved
+                  ? "🎉 100% Breakeven Achieved"
+                  : `${money(breakeven.remainingAmount)} remaining`}
+              </small>
+            </div>
+          </div>
+
+          {/* Progress Bar & Milestone Timeline */}
+          <div className="breakeven-progress-wrap">
+            <div className="breakeven-progress-bar-container">
+              <div
+                className={`breakeven-progress-bar-fill ${breakeven.isAchieved ? "completed" : ""}`}
+                style={{ width: `${Math.min(100, Math.max(0, breakeven.recoveryPercentage))}%` }}
+              />
+            </div>
+            <div className="breakeven-milestones">
+              <span>0% Start</span>
+              <span>25% Quarter</span>
+              <span>50% Halfway</span>
+              <span>75% Advanced</span>
+              <span className="breakeven-flag">🏁 100% Breakeven</span>
+            </div>
+          </div>
+
+          {/* Breakeven Forecast & Insights Banner */}
+          <div className="breakeven-insight-banner">
+            <div className="insight-icon">
+              {breakeven.isAchieved ? <Sparkles size={20} /> : <TrendingUp size={20} />}
+            </div>
+            <div className="insight-text">
+              {breakeven.isAchieved ? (
+                <>
+                  <strong>Full Breakeven Achieved!</strong> Your initial PG buying & setup investment has been 100% recovered through operational profits. The property is currently operating in pure profit.
+                </>
+              ) : breakeven.monthsToBreakeven !== null ? (
+                <>
+                  <strong>Estimated ~{breakeven.monthsToBreakeven} Months to Full Breakeven</strong> (Target: <b>{breakeven.projectedDate}</b>). Based on your recent monthly profit run-rate of <b>{money(breakeven.avgMonthlyProfit)}/month</b>, you are projected to recover the remaining <b>{money(breakeven.remainingAmount)}</b> in approximately {breakeven.monthsToBreakeven} months.
+                </>
+              ) : (
+                <>
+                  <strong>Breakeven Forecast:</strong> As you record rent collections and manage expenses, your dynamic breakeven timeline and monthly profit run-rate will update automatically.
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+
         <div className="dashboard-grid">
           <section className="panel revenue-panel">
             <div className="panel-head">
