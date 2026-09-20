@@ -2001,3 +2001,157 @@ td small,
 .card-actions {
   flex-wrap: wrap;
 }
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.share-dialog {
+  width: 620px;
+  max-width: calc(100vw - 32px);
+}
+.share-dialog-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.share-recipient-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.share-recipient-card strong {
+  display: block;
+  font-size: 14px;
+  color: #14532d;
+}
+.share-recipient-card small {
+  display: block;
+  font-size: 12px;
+  color: #15803d;
+  margin-top: 3px;
+}
+.share-recipient-badge {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.share-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.share-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.share-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.07);
+}
+.share-action-btn b {
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+}
+.share-action-btn small {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+.share-action-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #334155;
+  flex-shrink: 0;
+}
+.share-action-btn.whatsapp {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+.share-action-btn.whatsapp .share-action-icon {
+  background: #10b981;
+  color: #ffffff;
+}
+.share-action-btn.whatsapp b {
+  color: #065f46;
+}
+.share-action-btn.whatsapp small {
+  color: #047857;
+}
+.share-action-btn.copy .share-action-icon {
+  background: #ecfeff;
+  color: #0891b2;
+}
+.share-action-btn.pdf .share-action-icon {
+  background: #fdf2f8;
+  color: #db2777;
+}
+.share-action-btn.email .share-action-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+.action-arrow {
+  margin-left: auto;
+  color: #047857;
+  opacity: 0.6;
+}
+.share-preview-wrap {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.share-preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.8px;
+}
+.share-preview-text {
+  margin: 0;
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 170px;
+  overflow-y: auto;
+}
+

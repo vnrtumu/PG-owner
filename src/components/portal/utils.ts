@@ -116,3 +116,33 @@ export function printReceipt(
   w.document.close();
   w.print();
 }
+
+export function formatReceiptText(payment: Row, data: Data): string {
+  const invoice = data.invoices.find((i) => i.id === payment.invoice_id);
+  const property = data.properties.find((x) => x.id === payment.property_id);
+
+  return [
+    `🧾 *RENT PAYMENT RECEIPT*`,
+    `----------------------------------------`,
+    `🏢 *Property*: ${property?.name || "PG"}`,
+    property?.address ? `📍 *Address*: ${property.address}, ${property.city}` : null,
+    `👤 *Resident*: ${payment.tenant_name}`,
+    `📄 *Invoice*: #${String(invoice?.number || payment.invoice_number || "").padStart(4, "0")} (${invoice?.description || "Rent"})`,
+    `💰 *Amount Received*: ${money(payment.amount)}`,
+    `📅 *Payment Date*: ${day(payment.paid_on)}`,
+    `💳 *Payment Method*: ${payment.method}`,
+    payment.reference ? `🔢 *Transaction Ref*: ${payment.reference}` : null,
+    `----------------------------------------`,
+    `✅ Thank you for your payment!`,
+    `_Issued by ${property?.name || "NestLedger"}_`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function getWhatsAppShareUrl(phone: string, text: string): string {
+  const cleanPhone = (phone || "").replace(/\D/g, "");
+  const formattedPhone =
+    cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+  return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(text)}`;
+}

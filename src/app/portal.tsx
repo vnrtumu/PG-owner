@@ -12,6 +12,7 @@ import { Header, PageHeading } from "@/components/portal/layout/Header";
 import { Footer } from "@/components/portal/layout/Footer";
 import { FormDialog } from "@/components/portal/dialogs/FormDialog";
 import { TenantDetailDialog } from "@/components/portal/dialogs/TenantDetailDialog";
+import { ShareReceiptDialog } from "@/components/portal/dialogs/ShareReceiptDialog";
 
 import { OverviewView } from "@/components/portal/views/OverviewView";
 import { PropertiesView } from "@/components/portal/views/PropertiesView";
@@ -36,6 +37,8 @@ function PortalContent() {
     setModal,
     detail,
     setDetail,
+    sharePayment,
+    setSharePayment,
     data,
     refresh,
     act,
@@ -178,6 +181,14 @@ function PortalContent() {
                 submit: "Confirm refund & checkout",
               });
           }}
+        />
+      )}
+      {sharePayment && (
+        <ShareReceiptDialog
+          payment={sharePayment}
+          data={data}
+          onClose={() => setSharePayment(null)}
+          onToast={setToast}
         />
       )}
     </div>

@@ -32,7 +32,7 @@ export async function getData(user: User) {
     : [];
   const payments = finance
     ? await query(
-        `SELECT pay.*,i.property_id,i.number invoice_number,t.name tenant_name FROM payments pay JOIN invoices i ON i.id=pay.invoice_id JOIN properties p ON p.id=i.property_id JOIN stays s ON s.id=i.stay_id JOIN tenants t ON t.id=s.tenant_id WHERE ${scope} ORDER BY pay.created_at DESC`,
+        `SELECT pay.*,i.property_id,i.number invoice_number,t.name tenant_name,t.phone tenant_phone,t.email tenant_email FROM payments pay JOIN invoices i ON i.id=pay.invoice_id JOIN properties p ON p.id=i.property_id JOIN stays s ON s.id=i.stay_id JOIN tenants t ON t.id=s.tenant_id WHERE ${scope} ORDER BY pay.created_at DESC`,
       )
     : [];
   const expenses = finance

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Search, RefreshCw, Download, ArrowRight, Check } from "lucide-react";
+import { Search, RefreshCw, Download, ArrowRight, Check, Share2 } from "lucide-react";
 import { usePortal } from "../context/PortalContext";
 import { Table } from "../common/Table";
 import { Badge } from "../common/Badge";
@@ -24,6 +24,7 @@ export function RentPaymentsView() {
     defaultProp,
     payment,
     receipt,
+    shareReceipt,
   } = usePortal();
 
   return (
@@ -115,13 +116,22 @@ export function RentPaymentsView() {
             day(p.paid_on),
             p.method,
             <b key={`amt-${p.id}`}>{money(p.amount)}</b>,
-            <button
-              key={`rcpt-${p.id}`}
-              className="text-btn"
-              onClick={() => receipt(p)}
-            >
-              <Download size={14} /> Receipt
-            </button>,
+            <div key={`actions-${p.id}`} className="row-actions">
+              <button
+                className="text-btn"
+                onClick={() => receipt(p)}
+                title="Print or download PDF receipt"
+              >
+                <Download size={14} /> Receipt
+              </button>
+              <button
+                className="text-btn"
+                onClick={() => shareReceipt(p)}
+                title="Share receipt via WhatsApp, Copy, or Email"
+              >
+                <Share2 size={14} /> Share
+              </button>
+            </div>,
           ])}
         />
       ) : (
@@ -180,11 +190,24 @@ export function RentPaymentsView() {
                     Collect <ArrowRight size={14} />
                   </button>
                 ) : (
-                  <Check
-                    key={`chk-${i.id}`}
-                    size={17}
-                    className="success-icon"
-                  />
+                  <div key={`paid-act-${i.id}`} className="row-actions">
+                    <span title="Paid in full">
+                      <Check size={17} className="success-icon" />
+                    </span>
+                    {(() => {
+                      const p = payments.find((x) => x.invoice_id === i.id);
+                      return p ? (
+                        <button
+                          type="button"
+                          className="text-btn"
+                          onClick={() => shareReceipt(p)}
+                          title="Share rent receipt with tenant"
+                        >
+                          <Share2 size={13} /> Share
+                        </button>
+                      ) : null;
+                    })()}
+                  </div>
                 ),
               ];
             })}

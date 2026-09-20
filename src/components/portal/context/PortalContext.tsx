@@ -70,6 +70,9 @@ export interface PortalContextType {
   addProperty: (p?: Row) => void;
   payment: (i: Row) => void;
   receipt: (p: Row) => void;
+  shareReceipt: (p: Row) => void;
+  sharePayment: Row | null;
+  setSharePayment: React.Dispatch<React.SetStateAction<Row | null>>;
   exportReport: (type: string) => void;
 }
 
@@ -103,6 +106,7 @@ export function PortalProvider({
   const [mobile, setMobile] = useState(false);
   const [filter, setFilter] = useState("All");
   const [detail, setDetail] = useState<Row | null>(null);
+  const [sharePayment, setSharePayment] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Sync internal data when initialData updates
@@ -298,6 +302,10 @@ export function PortalProvider({
     printReceipt(p, data, setToast);
   };
 
+  const shareReceipt = (p: Row) => {
+    setSharePayment(p);
+  };
+
   const exportReport = (type: string) => {
     window.location.href = `/api/export?type=${type}&property=${property}`;
   };
@@ -357,6 +365,9 @@ export function PortalProvider({
         addProperty,
         payment,
         receipt,
+        shareReceipt,
+        sharePayment,
+        setSharePayment,
         exportReport,
       }}
     >
