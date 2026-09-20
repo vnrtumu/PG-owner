@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.env
+.env.*
+LOCAL-ACCESS.txt
+uploads
+backups
+test-results
+playwright-report

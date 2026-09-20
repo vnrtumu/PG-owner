@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+uploads/
+backups/
+playwright-report/
+test-results/
+*.tsbuildinfo
+LOCAL-ACCESS.txt
+.DS_Store

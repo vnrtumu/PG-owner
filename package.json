@@ -1,0 +1,36 @@
+{
+  "name": "pg-owner-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node --env-file=.env scripts/migrate.mjs",
+    "db:seed": "node --env-file=.env scripts/seed.mjs",
+    "owner:create": "node --env-file=.env scripts/create-owner.mjs",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "jose": "^6.1.0",
+    "lucide-react": "latest",
+    "next": "latest",
+    "pg": "^8.16.3",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "prettier": "^3.9.8",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
